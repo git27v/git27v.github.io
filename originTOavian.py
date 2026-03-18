@@ -353,10 +353,10 @@ def main(event):
     gemination = False
 
     # intervocalic ungeminated fricative voicing
-    Y = loopsub(rf"({orify(vowels)}|w|j|ɥ)(ː)?s({orify(vowels)}|w|j|ɥ)", r"\1\2z\3", Y)
-    Y = loopsub(rf"({orify(vowels)}|w|j|ɥ)(ː)?f({orify(vowels)}|w|j|ɥ)", r"\1\2v\3", Y)
-    Y = loopsub(rf"({orify(vowels)}|w|j|ɥ)(ː)?x({orify(vowels)}|w|j|ɥ)", r"\1\2ɣ\3", Y)
-    Y = loopsub(rf"({orify(vowels)}|w|j|ɥ)(ː)?ç({orify(vowels)}|w|j|ɥ)", r"\1\2ʝ\3", Y)
+    Y = loopsub(rf"({orify(vowels)}|w|j|ɥ)(ː)?(ˈ)?s(ᶣ|ʲ|ʷ)?({orify(vowels)}|w|j|ɥ)", r"\1\2\3z\4\5", Y) 
+    Y = loopsub(rf"({orify(vowels)}|w|j|ɥ)(ː)?(ˈ)?f(ᶣ|ʲ|ʷ)?({orify(vowels)}|w|j|ɥ)", r"\1\2\3v\4\5", Y)
+    Y = loopsub(rf"({orify(vowels)}|w|j|ɥ)(ː)?(ˈ)?x(ᶣ|ʲ|ʷ)?({orify(vowels)}|w|j|ɥ)", r"\1\2\3ɣ\4\5", Y)
+    Y = loopsub(rf"({orify(vowels)}|w|j|ɥ)(ː)?(ˈ)?ç(ᶣ|ʲ|ʷ)?({orify(vowels)}|w|j|ɥ)", r"\1\2\3ʝ\4\5", Y)
     consonants.extend(["z", "v", "ɣ", "ʝ"])
     if Y != X:
         X = repair(Y)
