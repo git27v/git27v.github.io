@@ -151,13 +151,20 @@ def main(event):
         print("Please try again.")
         return None
     for i in wrrd:
-        print(vowels + consonants + ["y","́","̄","á","é","í","ó","ā","ē","ī","ō"])
-        if i not in vowels + consonants + ["y","́","̄","á","é","í","ó","ā","ē","ī","ō"]:
+        if i not in vowels + consonants + ["y","́","̄","á","é","í","ó","ā","ē","ī","ō","'"]:
             print("You cannot use non-ORIGIN phonemes.")
             print("Please try again.")
             return None
     # make it ipa
     X = wrrd
+    X = loopsub("á","á",X)
+    X = loopsub("é","é",X)
+    X = loopsub("í","í",X)
+    X = loopsub("ó","ó",X)
+    X = loopsub("ā","ā",X)
+    X = loopsub("ē","ē",X)
+    X = loopsub("ī","ī",X)
+    X = loopsub("ō","ō",X)
     X = loopsub("kw|q", "kʷ", X)  # kw-ification
     X = X.replace("y", "j")  # yod
     X = X.replace("'", "ʔ").replace("‘","ʔ")  # glottal stop
