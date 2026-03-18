@@ -58,10 +58,11 @@ def repair(txt):
     txt = loopsub(rf"(?<!{vowels})(ʷ)(?={consonants})", r"\1u", txt) if loneglide == True else txt
 
     # fix stress
-    txt = loopsub(rf"({consonants})(ː|ᶣ|ʲ|ʷ)?(ˈ)({vowels})", r"\3\1\2\4", txt)
-    txt = loopsub(rf"({vowels})(ˈ)({consonants})({consonants})", r"\2\1\3\4", txt)
-    txt = loopsub(rf"({consonants})(ˈ)(ᶣ|ʲ|ʷ)", r"\2\1\3", txt)
-    txt = loopsub(rf"^({consonants})(ᶣ|ʲ|ʷ)?(ˈ)({consonants})", r"\3\1\2\4", txt)
+    for i in 2:
+        txt = loopsub(rf"({consonants})(ː|ᶣ|ʲ|ʷ)?(ˈ)({vowels})", r"\3\1\2\4", txt)
+        txt = loopsub(rf"({vowels})(ˈ)({consonants})({consonants})", r"\2\1\3\4", txt)
+        txt = loopsub(rf"({consonants})(ˈ)(ᶣ|ʲ|ʷ)", r"\2\1\3", txt)
+        txt = loopsub(rf"^({consonants})(ᶣ|ʲ|ʷ)?(ˈ)({consonants})", r"\3\1\2\4", txt)
     return txt
 
 def stressify(txt):
