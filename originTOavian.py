@@ -266,7 +266,7 @@ def main(event):
 
     # palatalization
     Y = X
-    Y = loopsub(rf"(?<={consonants})([ij])(?=[^ː])(ˈ)?", r"\2ʲ", Y)
+    Y = loopsub(rf"(?<={consonants})([ij])([^ː])?(ˈ)?", r"ʲ\2", Y)
     Y = loopsub(rf"(?<={consonants})iː", "ʲiː", Y)
     if Y != X:
         X = repair(Y)
