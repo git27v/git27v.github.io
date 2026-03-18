@@ -1,4 +1,5 @@
 name = "origintoavianevolver"
+terminal = false
 
 #Install packages to be used in this project
 #packages = ["b64encode","re"]
