@@ -182,7 +182,7 @@ def main(event):
     X = loopsub("ō","ō",X)
     X = loopsub("kw|q", "kʷ", X)  # kw-ification
     X = X.replace("y", "j")  # yod
-    X = X.replace("'", "ʔ").replace("‘","ʔ")  # glottal stop
+    X = X.replace("'", "ʔ").replace("‘","ʔ").replace("'","ʔ")  # glottal stop
     X = loopsub(rf"({orify(consonants)})\1+", r"\1ː", X)  # consonant gemination
     X = loopsub(rf"({vowels})\1+", r"\1ː", X)  # vowel length
     X = X.replace("̄", "ː")  # vowel length
