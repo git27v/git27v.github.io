@@ -16,10 +16,24 @@
     vowels can occur in hiatus
     stress is penultimate by default; mark abnormal stress with an acute.<br>
     mark long vowels with a macron or double vowels.</p>
+    <p>dialects:<br>
+    avian: old language; used for mass communication<br>
+    bird: AKA bird call; a 2 caw language of daylight prairie<br>
+    blue bird: a 3 caw language of hidden forest<br>
+    nightbird: a 3 caw language of daylight prairie</p>
     <input id="wordin" type="text" placeholder="word in origin here...">
     <button id="evolve">evolve word</button>
+    <label for="dialect">dialect:</label>
+    <select name="dialect" id="dialect">
+        <option value="avian">avian</option>
+        <option value="bird">bird</option>
+        <option value="bluebird">blue bird</option>
+        <option value="nightbird">nightbird</option>
+    </select>
     <p id="changelog">changes will display here</p>
     <p id="wordlist">words evolved:</p>
+    
+    <button id="clear">clear history</button>
     <script type="py" src="/originTOavian.py" config="/pyscript.toml"></script>
 </body>
 </html>
