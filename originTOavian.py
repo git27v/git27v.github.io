@@ -24,17 +24,24 @@ def lststr(lst):
     return ''.join(map(re.escape, lst))
 
 def loopsub(pattern, result, txt):  # types like normal re.sub but loops to catch all cases
-    while True:
+    looping = 0
+    og = txt
+    while looping < 5:
         txt, nbr = re.subn(pattern, result, txt)
+        looping+=1
         if nbr == 0:
             return txt
+    print(f"looping > 5: ejecting {og} as {txt}")
+    print(f"error loop: {pattern} > {result}")
+    return txt
 
 def repair(txt):
-    txt = loopsub(rf"([ː,ᶣ,ʲ,ʷ])\1+", "ː", txt)  # ːː > ː
+    txt = loopsub(rf"([ː,ᶣ,ʲ,ʷ])\1+", r"\1", txt)  # ːː > ː
 
     # vowel length
     txt = loopsub(rf"({vowels})\1+", r"\1ː", txt) if vowellength == True else loopsub(rf"({vowels})\1+", r"\1", txt)
     txt = loopsub(rf"({vowels})ˈ\1+", r"ˈ\1ː", txt) if vowellength == True else loopsub(rf"({vowels})ˈ\1+", r"ˈ\1", txt)
+    txt = loopsub(rf"({vowels})ː\1+", r"\1ː", txt) if vowellength == True else txt
     # gemination
     txt = loopsub(rf"({orify(consonants)})\1+", r"\1ː", txt) if gemination == True else loopsub(rf"({orify(consonants)})\1+", r"\1", txt)
     txt = loopsub(rf"({orify(consonants)})ˈ\1+", r"\1ː", txt) if gemination == True else loopsub(rf"({orify(consonants)})ˈ\1+", r"ˈ\1", txt)
@@ -44,11 +51,11 @@ def repair(txt):
     txt = loopsub(rf"oa|ao", "ɔː", txt) if lowcoalesce == True else txt
     txt = loopsub(rf"ea|ae", "ɛː", txt) if lowcoalesce == True else txt
     # labiopalatalness
-    txt = loopsub(rf"ʲʷ|ᶣʷ|ʷᶣ|ʷʲ|ʲᶣ|ᶣʲ|ʲw|ᶣw|ʷɥ|ʷj|ʲɥ|ᶣj",rf"ᶣ",txt) if labiopalatalness == True else txt
+    txt = loopsub(rf"ʲ(ˈ)?ʷ|ᶣ(ˈ)?ʷ|ʷ(ˈ)?ᶣ|ʷ(ˈ)?ʲ|ʲ(ˈ)?ᶣ|ᶣ(ˈ)?ʲ|ʲ(ˈ)?w|ᶣ(ˈ)?w|ʷ(ˈ)?ɥ|ʷ(ˈ)?j|ʲ(ˈ)?ɥ|ᶣ(ˈ)?j",rf"\1ᶣ",txt) if labiopalatalness == True else txt
     txt = loopsub(rf"(f|w|m|b|p)ᶣ", r"\1ʲ", txt) if labiopalatalness == True else txt
-    txt = loopsub(rf"(ʃ|ʒ|tʃ|ʎ)ᶣ", r"\1ʷ", txt) if labiopalatalness == True else txt
+    txt = loopsub(rf"(ʃ|ʒ|ʧ|ʎ)ᶣ", r"\1ʷ", txt) if labiopalatalness == True else txt
     txt = loopsub(rf"(f|w|m|b|p)ʷ", r"\1", txt) if labiopalatalness == True else txt
-    txt = loopsub(rf"(ʃ|ʒ|tʃ|ʎ)ʲ", r"\1", txt) if labiopalatalness == True else txt
+    txt = loopsub(rf"(ʃ|ʒ|ʧ|ʎ)ʲ", r"\1", txt) if labiopalatalness == True else txt
     # glide repair
     txt = loopsub(rf"(?<!{vowels})(ɥ)(?={consonants})", r"y", txt) if yvowel == True and loneglide == True else txt
     txt = loopsub(rf"(?<!{vowels})(ᶣ)(?={consonants})", r"\1y", txt) if yvowel == True and loneglide == True else txt
@@ -58,7 +65,7 @@ def repair(txt):
     txt = loopsub(rf"(?<!{vowels})(ʷ)(?={consonants})", r"\1u", txt) if loneglide == True else txt
 
     # fix stress
-    for i in 2:
+    for i in range(2):
         txt = loopsub(rf"({consonants})(ː|ᶣ|ʲ|ʷ)?(ˈ)({vowels})", r"\3\1\2\4", txt)
         txt = loopsub(rf"({vowels})(ˈ)({consonants})({consonants})", r"\2\1\3\4", txt)
         txt = loopsub(rf"({consonants})(ˈ)(ᶣ|ʲ|ʷ)", r"\2\1\3", txt)
@@ -144,15 +151,15 @@ def main(event):
             print("Please try again.")
     for web:"""
     passed = False
-    wrrd = document.getElementById("wordin").value
-    if any(i in wrrd for i in vowels):
-        "a"
-    else:
+    wrrd = document.getElementById("wordin").value.lower()
+    if any(i in wrrd for i in vowels + ["á","é","í","ó","ā","ē","ī","ō"])==False:
+        document.getElementById("changelog").innerHTML = "Every word has to have one of ORIGIN's vowels (a, i, e, o).<br>Please try again.".replace("\\","")
         print("Every word has to have one of ORIGIN's vowels (a, i, e, o).")
         print("Please try again.")
         return None
     for i in wrrd:
         if i not in vowels + consonants + ["y","́","̄","á","é","í","ó","ā","ē","ī","ō","'"]:
+            document.getElementById("changelog").innerHTML = "You cannot use non-ORIGIN phonemes.<br>Please try again.".replace("\\","")
             print("You cannot use non-ORIGIN phonemes.")
             print("Please try again.")
             return None
@@ -162,10 +169,10 @@ def main(event):
     X = loopsub("é","é",X)
     X = loopsub("í","í",X)
     X = loopsub("ó","ó",X)
-    X = loopsub("ā","ā",X)
-    X = loopsub("ē","ē",X)
-    X = loopsub("ī","ī",X)
-    X = loopsub("ō","ō",X)
+    X = loopsub("ā","ā",X)
+    X = loopsub("ē","ē",X)
+    X = loopsub("ī","ī",X)
+    X = loopsub("ō","ō",X)
     X = loopsub("kw|q", "kʷ", X)  # kw-ification
     X = X.replace("y", "j")  # yod
     X = X.replace("'", "ʔ").replace("‘","ʔ")  # glottal stop
@@ -327,7 +334,7 @@ def main(event):
     Y = X
     Y = loopsub(rf"({consonants}ᶣ)(e|o)", r"\1ø", Y)
     Y = loopsub(rf"(ɥ)(e|o|ø)|(e|o|ø)(ɥ)", r"ø", Y)
-    Y = loopsub(rf"(o|e|ø)(ː)?(ˈ)(o|e|ø)", r"\3øː", Y)
+    Y = loopsub(rf"(o|e|ø)(ː)?(ˈ)?(o|e|ø)", r"\3øː", Y)
     vowels.append("ø")
     if Y != X:
         X = repair(Y)
@@ -336,15 +343,15 @@ def main(event):
     # labialization
     Y = X
     Y = loopsub(rf"({orify(consonants)}|ᶣ|ʲ|ʷ)(u|w)(?!ː)", r"\1ʷ", Y)
-    Y = loopsub(rf"({orify(consonants)}|ᶣ|ʲ|ʷ)(uː)", r"\1ʷuː", Y)
+    Y = loopsub(rf"({orify(consonants)}|ʲ)(uː)", r"\1ʷuː", Y)
     if Y != X:
         X = repair(Y)
         changes.append(f"15: Labialization | {X}")
 
     # t affrication
     Y = X
-    Y = loopsub("tʷ", "ʦ", Y)
-    Y = loopsub("tᶣ", "ʦʲ", Y)
+    Y = loopsub("tʷ", "ʦʷ", Y)
+    Y = loopsub("tᶣ", "ʦᶣ", Y)
     consonants.append("ʦ")
     if Y != X:
         X = repair(Y)
@@ -513,7 +520,8 @@ def main(event):
 
     #liquid metathesis
     Y=X
-    Y = loopsub(rf"({consonants})(l|r|ɾ|ʎ)(?!{vowels})",rf"\2\1",Y)
+    Y = loopsub(rf"({consonants})(ˈ)?(l|r|ɾ|ʎ)(?!{vowels})",rf"\3\2\1",Y)
+    Y = loopsub(rf"(l|ʎ)(ˈ)?(r|ɾ)",rf"\3\2\1",Y)
     if Y != X:
       X = repair(Y)
       changes.append(f"31: Liquid Metathesis | {X}")
@@ -540,7 +548,7 @@ def main(event):
 
     #sibilant whistling
     Y=X
-    Y = loopsub(rf"(s|z|ʃ|ʒ|ʦ|ʧ)ʷ",r"\1͎",Y)
+    Y = loopsub(rf"(s|z|ʃ|ʒ|ʦ|ʧ)(ʷ|w)",r"\1͎",Y)
     if Y != X:
         X = repair(Y)
         changes.append(f"34: Sibilant Whistling | {X}")
@@ -553,24 +561,163 @@ def main(event):
                 Y[i].replace("ˈ","")
                 Y[i] = re.sub(rf"({vowels})",r"\1́",Y[i])
             break
-    Y = ''.join(map(re.escape, Y)).replace("ˌ", "").replace("ˈ","").replace("uw","v").replace("ij","h")
+    Y = ''.join(map(re.escape, Y)).replace("ˌ", "").replace("ˈ","").replace("uw","6").replace("ij","h")
     Z = Y
-    be4 = ["v","ʷ|͎","ʲ","h","a","e","i","o","u","ø","y","p","b","t","ʦ","k","g","ʧ","s","z","ʃ","ʒ","r","ɾ","l","m","n","w","j","ɥ","ʎ","ɲ"]
-    aft = ["уу","в","ь","ии","а","э","и","о","у","е","ю","п","б","т","ц","к","г","ч","с","з","ш","ж","р","д","л","м","н","ў","й","ы","ль","нь"]
-    af2 = ["uu","v","́","ij","a","e","i","o","u","ø","y","p","b","t","ts","k","g","tś","s","z","ś","ź","r","d","l","m","n","w","j","ẃ","ł","ń"]
+    be4 = ["6","b","ʷ|͎","ʲ","h","a","e","i","o","u","ø","y","p","t","ʦ","k","g","ʧ","s","z","ʃ","ʒ","r","ɾ","l","m","n","w","j","ɥ","ʎ","ɲ"]
+    aft = ["уу","б","в","ь","ии","а","э","и","о","у","е","ю","п","т","ц","к","г","ч","с","з","ш","ж","р","д","л","м","н","ў","й","ы","ль","нь"]
+    af2 = ["uu","b","v","́","ij","a","e","i","o","u","ø","y","p","t","ts","k","g","tś","s","z","ś","ź","r","d","l","m","n","w","j","ẃ","ł","ń"]
+    
+    dialect = document.getElementById("dialect").value
+    print(dialect)
+    print(X)
+    
+    if dialect != "avian":
+        if dialect == "bird":
+            print("got dialect")
+            #r shift
+            Y=X
+            Y=loopsub("ɾ","l",Y)
+            Y=loopsub("r","ɾ",Y)
+            consonants.remove("r")
+            if Y != X:
+            	X=repair(Y)
+            	changes.append(f"35: R Shift | {X}")
+            
+            #labial lenition
+            Y=X
+            Y=loopsub("p","f",Y)
+            Y=loopsub("b","v",Y)
+            consonants.remove("p")
+            consonants.remove("b")
+            consonants.extend(["f","v"])
+            if Y!=X:
+            	X=repair(Y)
+            	changes.append(f"36: Labial Lenition | {X}")
+                
+            #t lenition
+            Y=X
+            Y=loopsub("t","θ",Y)
+            consonants.remove("t")
+            consonants.append("θ")
+            if Y!=X:
+                X=repair(Y)
+                changes.append(f"37: Dental Lenition | {X}")
+            
+            #vocal dewhistling
+            Y=X
+            Y=loopsub(r"(z|ʒ)͎",r"\1v",Y)
+            consonants.append("v")
+            if Y!=X:
+            	X=repair(Y)
+            	changes.append(f"38: Vocal Sibilant Dewhistling | {X}")
+            
+            #rounded front vowel shift
+            Y=X
+            Y=loopsub("y","ɨ",Y)
+            Y=loopsub("ø","ə",Y)
+            if Y!=X:
+            	X=repair(Y)
+            	changes.append(f"39: Rounded Front Vowel Shift | {X}")
+        else:
+            #r shift
+            Y=X
+            Y=loopsub("ɾ","d",Y)
+            Y=loopsub("r","ɾ",Y)
+            consonants.append("d")
+            consonants.remove("r")
+            if Y != X:
+                X=repair(Y)
+                changes.append(f"35: R Shift | {X}")
+                
+            #high vowel breaking
+            Y=X
+            Y=loopsub("i","ɪj",Y)
+            Y=loopsub("u","ʊw",Y)
+            Y=loopsub("y","ʏɥ",Y)
+            vowels.extend(["ɪ","ʊ","ʏ"])
+            if Y != X:
+                X=repair(Y)
+                changes.append(f"36: High Vowel Breaking | {X}")
+            
+            #a splitting
+            Y=loopsub("(?<=[o,u,m,w,p,b,ɥ,ᶣ,ʷ,͎])a|a(?=[o,u,m,w,p,b,ɥ,ᶣ,ʷ,͎])","ɒ",Y)
+            Y=loopsub("a","æ",Y)
+            vowels.extend(["æ","ɒ"])
+            if Y != X:
+                X=repair(Y)
+                changes.append(f"37: A Splitting | {X}")
+    
+            
+            if dialect=="bluebird":
+                #zeta fortition
+                Y=X
+                Y=loopsub("z","d",Y)
+                Y=loopsub("d͎","ʣ͎",Y)
+                Y=loopsub("ʒ","ʤ",Y)
+                Y=loopsub("d͎","ʤ͎",Y)
+                consonants.append("ʣ")
+                consonants.remove("z")
+                consonants.remove("ʒ")
+                if Y != X:
+                    X=repair(Y)
+                    changes.append(f"38: Zeta Fortition | {X}")
+    
+                #w fortition
+                Y=X
+                Y=loopsub("(?<!ʊ)w","v",Y)
+                consonants.remove("w")
+                consonants.append("v")
+                if Y != X:
+                    X=repair(Y)
+                    changes.append(f"39: Wau Fortition | {X}")
+
+                #dl lateral affrication
+                Y=X
+                Y=loopsub("d(ˈ)?l","\1ɮ",Y)
+                if Y != X:
+                    X=repair(Y).replace("ɮ","dɮ")
+                    changes.append(f"40: Voiced Lateral | {X}")
+                    
+            elif dialect=="nightbird":
+                #debuccalization
+                Y=X
+                Y=loopsub("s(?!͎)","h",Y)
+                Y=loopsub(f"(?<!{vowels})h(?={consonants})","s",Y)
+                Y=loopsub("ʃ(?!͎)","ç",Y)
+                Y=loopsub(f"(?<!{vowels})ç(?={consonants})","ʃ",Y)
+                consonants.extend(["h","ç"])
+                if Y != X:
+                    X=repair(Y)
+                    changes.append(f"38: Debuccalization | {X}")
+                
+                #w fricativization
+                Y=X
+                Y=loopsub("(?<!ʊ)w","ʍ",Y)
+                consonants.append("ʍ")
+                if Y != X:
+                    X=repair(Y)
+                    changes.append(f"39: Wau Fricativization | {X}")
+
+    Y=Z
     for i in range(len(be4)):
         Y = re.sub(rf"({[be4[i]]})", rf"{aft[i]}",Y)
         Z = re.sub(rf"({[be4[i]]})", rf"{af2[i]}",Z)
+        
     # final word
+    
     document.getElementById("changelog").innerHTML = ""
     document.getElementById("changelog").innerHTML = '<br>'.join(map(re.escape,changes)).replace("\\","")
-    document.getElementById("wordlist").innerHTML += f"<br>{wrrd} /{pron}/ => {Y} /{X}/ ({Z})"
+    document.getElementById("wordlist").innerHTML += f"<br>{wrrd} /{pron}/ =>{dialect}=> {Y} /{X}/ ({Z})"
     print(f"end: {X}")
     print(f"orth: {Y}")
     print(f"orth2: {Z}")
     print("- - - - - - - - -")
-    return X, Y, Z
-    
+
+@when("click","#clear")
+def clear(event):
+    document.getElementById("changelog").innerHTML = "changes will display here"
+    document.getElementById("wordlist").innerHTML = "words evolved:"
+
 """
 def start():
     redo='y'
