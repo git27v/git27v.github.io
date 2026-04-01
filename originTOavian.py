@@ -704,10 +704,9 @@ def main(event):
         Z = re.sub(rf"({[be4[i]]})", rf"{af2[i]}",Z)
         
     # final word
-    
     document.getElementById("changelog").innerHTML = ""
     document.getElementById("changelog").innerHTML = '<br>'.join(map(re.escape,changes)).replace("\\","")
-    document.getElementById("wordlist").innerHTML += f"<br>{wrrd} /{pron}/ =>{dialect}=> {Y} /{X}/ ({Z})"
+    document.getElementById("wordlist").innerHTML += f"<br>{wrrd} /{pron}/ =>{dialect}=> {Y} {"/"+X+"/" if dialect=="avian" else "["+X+"]"} ({Z})"
     print(f"end: {X}")
     print(f"orth: {Y}")
     print(f"orth2: {Z}")
