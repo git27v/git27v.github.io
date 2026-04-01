@@ -37,11 +37,13 @@ def loopsub(pattern, result, txt):  # types like normal re.sub but loops to catc
 
 def repair(txt):
     txt = loopsub(rf"([ː,ᶣ,ʲ,ʷ])\1+", r"\1", txt)  # ːː > ː
+    txt = txt+"e" if any(i in txt for i in vowels) != True else txt
 
     # vowel length
     txt = loopsub(rf"({vowels})\1+", r"\1ː", txt) if vowellength == True else loopsub(rf"({vowels})\1+", r"\1", txt)
     txt = loopsub(rf"({vowels})ˈ\1+", r"ˈ\1ː", txt) if vowellength == True else loopsub(rf"({vowels})ˈ\1+", r"ˈ\1", txt)
     txt = loopsub(rf"({vowels})ː\1+", r"\1ː", txt) if vowellength == True else txt
+
     # gemination
     txt = loopsub(rf"({orify(consonants)})\1+", r"\1ː", txt) if gemination == True else loopsub(rf"({orify(consonants)})\1+", r"\1", txt)
     txt = loopsub(rf"({orify(consonants)})ˈ\1+", r"\1ː", txt) if gemination == True else loopsub(rf"({orify(consonants)})ˈ\1+", r"ˈ\1", txt)
@@ -50,12 +52,14 @@ def repair(txt):
     # lowcoalesce
     txt = loopsub(rf"oa|ao", "ɔː", txt) if lowcoalesce == True else txt
     txt = loopsub(rf"ea|ae", "ɛː", txt) if lowcoalesce == True else txt
+
     # labiopalatalness
     txt = loopsub(rf"ʲ(ˈ)?ʷ|ᶣ(ˈ)?ʷ|ʷ(ˈ)?ᶣ|ʷ(ˈ)?ʲ|ʲ(ˈ)?ᶣ|ᶣ(ˈ)?ʲ|ʲ(ˈ)?w|ᶣ(ˈ)?w|ʷ(ˈ)?ɥ|ʷ(ˈ)?j|ʲ(ˈ)?ɥ|ᶣ(ˈ)?j",rf"\1ᶣ",txt) if labiopalatalness == True else txt
     txt = loopsub(rf"(f|w|m|b|p)ᶣ", r"\1ʲ", txt) if labiopalatalness == True else txt
     txt = loopsub(rf"(ʃ|ʒ|ʧ|ʎ)ᶣ", r"\1ʷ", txt) if labiopalatalness == True else txt
     txt = loopsub(rf"(f|w|m|b|p)ʷ", r"\1", txt) if labiopalatalness == True else txt
     txt = loopsub(rf"(ʃ|ʒ|ʧ|ʎ)ʲ", r"\1", txt) if labiopalatalness == True else txt
+
     # glide repair
     txt = loopsub(rf"(?<!{vowels})(ɥ)(?={consonants})", r"y", txt) if yvowel == True and loneglide == True else txt
     txt = loopsub(rf"(?<!{vowels})(ᶣ)(?={consonants})", r"\1y", txt) if yvowel == True and loneglide == True else txt
@@ -63,7 +67,7 @@ def repair(txt):
     txt = loopsub(rf"(?<!{vowels})(ʲ)(?={consonants})", r"\1i", txt) if loneglide == True else txt
     txt = loopsub(rf"(?<!{vowels})(j)(?={consonants})", r"u", txt) if loneglide == True else txt
     txt = loopsub(rf"(?<!{vowels})(ʷ)(?={consonants})", r"\1u", txt) if loneglide == True else txt
-
+    
     # fix stress
     for i in range(2):
         txt = loopsub(rf"({consonants})(ː|ᶣ|ʲ|ʷ)?(ˈ)({vowels})", r"\3\1\2\4", txt)
@@ -80,24 +84,27 @@ def stressify(txt):
     lst = txt.split("-")
     happen=0
     while happen!=-1: #brute forcing all syllables to have a vowel and fit 2 cluster max
-        for i in range(len(lst)):
-            if not any(j in lst[i] for j in vowels):
-                if i!=0:
-                    lst[i-1]+=lst[i] # 'to', 'k' => 'tok'
-                    del lst[i]
-                    break
-                else:
-                    lst[i + 1] = lst[i]+lst[i + 1]  # 'f', 'to' => 'fto'
-                    del lst[i]
-                    break
-            elif re.search(rf"^({consonants})(ᶣ|ʲ|ʷ)?(?=({consonants})(ᶣ|ʲ|ʷ)?({consonants}))", lst[i])!=None and i!=0:
-                mch = re.search(rf"^({consonants})(ᶣ|ʲ|ʷ)?(?=({consonants})(ᶣ|ʲ|ʷ)?({consonants}))", lst[i]).group()
-                if i != 0:
-                    lst[i - 1] += mch  # 'to', 'k' => 'tok'
-                    lst[i]=lst[i][len(mch):]
-                    break
-            elif i == len(lst)-1:
-                happen=-1 #resolution only when ALL syllables have a vowel
+        if len(lst) == 1:
+            happen=-1
+        else:
+            for i in range(len(lst)):
+                if not any(j in lst[i] for j in vowels):
+                    if i!=0:
+                        lst[i-1]+=lst[i] # 'to', 'k' => 'tok'
+                        del lst[i]
+                        break
+                    else:
+                        lst[i + 1] = lst[i]+lst[i + 1]  # 'f', 'to' => 'fto'
+                        del lst[i]
+                        break
+                elif re.search(rf"^({consonants})(ᶣ|ʲ|ʷ)?(?=({consonants})(ᶣ|ʲ|ʷ)?({consonants}))", lst[i])!=None and i!=0:
+                    mch = re.search(rf"^({consonants})(ᶣ|ʲ|ʷ)?(?=({consonants})(ᶣ|ʲ|ʷ)?({consonants}))", lst[i]).group()
+                    if i != 0:
+                        lst[i - 1] += mch  # 'to', 'k' => 'tok'
+                        lst[i]=lst[i][len(mch):]
+                        break
+                elif i == len(lst)-1:
+                    happen=-1 #resolution only when ALL syllables have a vowel
 
     lst = [i for i in lst if i != ""]
     if "ˈ" not in txt:
