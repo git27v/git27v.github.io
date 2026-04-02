@@ -38,6 +38,7 @@ def loopsub(pattern, result, txt):  # types like normal re.sub but loops to catc
 def repair(txt):
     txt = loopsub(rf"([ː,ᶣ,ʲ,ʷ])\1+", r"\1", txt)  # ːː > ː
     txt = txt+"e" if any(i in txt for i in vowels) != True else txt
+    txt = loopsub(rf"({consonants})([^{consonants}{vowels}])?({consonants})([^{consonants}{vowels}])?({consonants})([^{consonants}{vowels}])?({consonants})",r"\1\2\3\4e\5\6\7",txt)
 
     # vowel length
     txt = loopsub(rf"({vowels})\1+", r"\1ː", txt) if vowellength == True else loopsub(rf"({vowels})\1+", r"\1", txt)
@@ -182,7 +183,7 @@ def main(event):
     X = loopsub("ō","ō",X)
     X = loopsub("kw|q", "kʷ", X)  # kw-ification
     X = X.replace("y", "j")  # yod
-    X = X.replace("'", "ʔ").replace("‘","ʔ").replace("'","ʔ")  # glottal stop
+    X = X.replace("'", "ʔ").replace("‘","ʔ")  # glottal stop
     X = loopsub(rf"({orify(consonants)})\1+", r"\1ː", X)  # consonant gemination
     X = loopsub(rf"({vowels})\1+", r"\1ː", X)  # vowel length
     X = X.replace("̄", "ː")  # vowel length
