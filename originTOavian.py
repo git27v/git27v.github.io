@@ -536,8 +536,8 @@ def main(event):
 
     #labialized nasal fronting
     Y=X
-    Y = loopsub("nʷ", "m",Y)
-    Y = loopsub("ɲʷ","mʲ",Y)
+    Y = loopsub(rf"nʷ|n(ˈ)?w", rf"\1m",Y)
+    Y = loopsub(rf"ɲʷ|ɲ(ˈ)?w", rf"\1mʲ",Y)
     if Y != X:
         X = repair(Y)
         changes.append(f"32: Labialized Nasal Fronting | {X}")
