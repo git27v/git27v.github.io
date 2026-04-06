@@ -700,7 +700,7 @@ def main(wword):
 @when("click","#clear")
 def clear(event):
     document.getElementById("changelog").innerHTML = "changes will display here"
-    document.getElementById("wordlist").innerHTML = "words evolved:"
+    document.getElementById("wordlist").innerHTML = "evolutions"
 
 @when("click","#evolve")
 def initiate(event):
