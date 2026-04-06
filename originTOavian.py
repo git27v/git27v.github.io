@@ -46,8 +46,8 @@ def repair(txt):
     txt = loopsub(rf"({vowels})ː\1+", r"\1ː", txt) if vowellength == True else txt
 
     # gemination
-    txt = loopsub(rf"({orify(consonants)})\1+", r"\1ː", txt) if gemination == True else loopsub(rf"({orify(consonants)})\1+", r"\1", txt)
-    txt = loopsub(rf"({orify(consonants)})ˈ\1+", r"\1ː", txt) if gemination == True else loopsub(rf"({orify(consonants)})ˈ\1+", r"ˈ\1", txt)
+    txt = loopsub(rf"({orify(consonants)})([ᶣ,ʲ,ʷ])?\1\2?+", r"\1\2ː", txt) if gemination == True else loopsub(rf"({orify(consonants)})\1+", r"\1", txt)
+    txt = loopsub(rf"({orify(consonants)})([ᶣ,ʲ,ʷ])ˈ\1\2?+", r"\1\2ː", txt) if gemination == True else loopsub(rf"({orify(consonants)})ˈ\1+", r"ˈ\1", txt)
     txt = loopsub(rf"ɾː", r"r", txt) if gemination == True else loopsub(rf"ɾ(ˈ)?ɾ", r"\1r", txt)
 
     # lowcoalesce
@@ -133,8 +133,7 @@ def stressify(txt):
             lst[i] = "ˈ"+lst[i].replace("ˈ","")
     return lst
 
-@when("click","#evolve")
-def main(event):
+def main(wword):
     # resetting stuff
     global vowels, consonants, changes
     changes = []
@@ -147,40 +146,16 @@ def main(event):
     labiopalatalness = False
     yvowel = False
     loneglide = False
-    # get word
-    """ this is for nonweb, in terminal
-    passed = False
-    while passed==False:
-        X = input("word: ")
-        if any(i in X for i in vowels):
-            passed = True
-        else:
-            print("Every word has to have one of ORIGIN's vowels (a, i, e, o).")
-            print("Please try again.")
-    for web:"""
-    passed = False
-    wrrd = document.getElementById("wordin").value.lower()
-    if any(i in wrrd for i in vowels + ["á","é","í","ó","ā","ē","ī","ō"])==False:
-        document.getElementById("changelog").innerHTML = "Every word has to have one of ORIGIN's vowels (a, i, e, o).<br>Please try again.".replace("\\","")
-        print("Every word has to have one of ORIGIN's vowels (a, i, e, o).")
-        print("Please try again.")
-        return None
-    for i in wrrd:
-        if i not in vowels + consonants + ["y","́","̄","á","é","í","ó","ā","ē","ī","ō","'"]:
-            document.getElementById("changelog").innerHTML = "You cannot use non-ORIGIN phonemes.<br>Please try again.".replace("\\","")
-            print("You cannot use non-ORIGIN phonemes.")
-            print("Please try again.")
-            return None
     # make it ipa
-    X = wrrd
-    X = loopsub("á","á",X)
-    X = loopsub("é","é",X)
-    X = loopsub("í","í",X)
-    X = loopsub("ó","ó",X)
-    X = loopsub("ā","ā",X)
-    X = loopsub("ē","ē",X)
-    X = loopsub("ī","ī",X)
-    X = loopsub("ō","ō",X)
+    X = wword
+    X = loopsub("á|á","á",X)
+    X = loopsub("é|é","é",X)
+    X = loopsub("í|í","í",X)
+    X = loopsub("ó|ó","ó",X)
+    X = loopsub("ā|ā","ā",X)
+    X = loopsub("ē|ē","ē",X)
+    X = loopsub("ī|ī","ī",X)
+    X = loopsub("ō|ō","ō",X)
     X = loopsub("kw|q", "kʷ", X)  # kw-ification
     X = X.replace("y", "j")  # yod
     X = X.replace("'", "ʔ").replace("‘","ʔ")  # glottal stop
@@ -198,11 +173,11 @@ def main(event):
     # haplology
     # VCVC
     Y = X
-    Y = loopsub(rf"({vowels})({orify(consonants)})\1\2$", r"\1\2ː\1", Y)  # / _#
-    Y = loopsub(rf"({vowels})({orify(consonants)})\1\2", r"\1\2ː", Y)  # / !_#
+    Y = loopsub(rf"({vowels})({orify(consonants)})\1\2$", r"\1\2ː\1", Y)  # / _# still need to fix interaction w stress
+    Y = loopsub(rf"({vowels})(ˈ)?({orify(consonants)})\1(ˈ)\3", r"\2\1\4\3ː", Y)  # / !_#
     # CVCV
-    Y = loopsub(rf"^({orify(consonants)})({vowels})\1\2", r"\2\1ː\2", Y)  # / #_
-    Y = loopsub(rf"({orify(consonants)})({vowels})\1\2", r"\1ː\2", Y)  # / #_
+    Y = loopsub(rf"^(ˈ)?({orify(consonants)})({vowels})(ˈ)?\2\3", r"\1\3\4\2ː\3", Y)  # / #_
+    Y = loopsub(rf"({orify(consonants)})({vowels})(ˈ)\1\2", r"\3\1ː\2", Y)  # / #_
     if Y != X:
         X = repair(Y)
         changes.append(f"1: Haplology | {X}")
@@ -268,7 +243,7 @@ def main(event):
     lowcoalesce = False
     if Y != X:
         X = repair(Y)
-        changes.append(f"7: Middle Vowel merger | {X}")
+        changes.append(f"7: Middle Vowel Merger | {X}")
 
     # high vowel monophthongization
     Y = X
@@ -282,7 +257,7 @@ def main(event):
 
     # palatalization
     Y = X
-    Y = loopsub(rf"(?<={consonants})([ː])?([ij])([^ː])?(ˈ)?", r"\1ʲ\3\4", Y)
+    Y = loopsub(rf"(?<={consonants})([ː])?([ij])(?!ː)", r"ʲ\1", Y)
     Y = loopsub(rf"(?<={consonants})iː", "ʲiː", Y)
     if Y != X:
         X = repair(Y)
@@ -387,7 +362,7 @@ def main(event):
 
     # de-gemination
     Y = X
-    Y = loopsub(rf"({consonants})ː", r"\1", Y)
+    Y = loopsub(rf"({consonants})(ᶣ|ʲ|ʷ)?ː", r"\1\2", Y)
     if Y != X:
         X = repair(Y)
         changes.append(f"19: De-gemination | {X}")
@@ -536,8 +511,10 @@ def main(event):
 
     #labialized nasal fronting
     Y=X
-    Y = loopsub(rf"nʷ|n(ˈ)?w", rf"\1m",Y)
-    Y = loopsub(rf"ɲʷ|ɲ(ˈ)?w", rf"\1mʲ",Y)
+    Y = loopsub("nʷ|n(ˈ)?w", r"\1m",Y)
+    Y = loopsub("n(ˈ)?([m,p,b,ɥ,ᶣ,͎])",r"m\1\2",Y)
+    Y = loopsub("ɲʷ|ɲ(ˈ)?w", r"\1mʲ",Y)
+    Y = loopsub("ɲ(ˈ)?([m,p,b,ɥ,͎])", r"m\1\2ʲ",Y)
     if Y != X:
         X = repair(Y)
         changes.append(f"32: Labialized Nasal Fronting | {X}")
@@ -712,18 +689,77 @@ def main(event):
         Z = re.sub(rf"({[be4[i]]})", rf"{af2[i]}",Z)
         
     # final word
-    document.getElementById("changelog").innerHTML = ""
-    document.getElementById("changelog").innerHTML = '<br>'.join(map(re.escape,changes)).replace("\\","")
-    document.getElementById("wordlist").innerHTML += f"<br>{wrrd} /{pron}/ =>{dialect}=> {Y} {"/"+X+"/" if dialect=="avian" else "["+X+"]"} ({Z})"
     print(f"end: {X}")
     print(f"orth: {Y}")
     print(f"orth2: {Z}")
     print("- - - - - - - - -")
+    changesstr = '<br>'.join(map(re.escape,changes)).replace("\\","")
+    wordresultstr = f"<br>{wword} /{pron}/ =>{dialect}=> {Y} {"/"+X+"/" if dialect=="avian" else "["+X+"]"} ({Z})"
+    return changesstr, pron, dialect, X, Y, Z, vowels
 
 @when("click","#clear")
 def clear(event):
     document.getElementById("changelog").innerHTML = "changes will display here"
     document.getElementById("wordlist").innerHTML = "words evolved:"
+
+@when("click","#evolve")
+def initiate(event):
+    chng = ""
+    p = ""
+    d = ""
+    x = ""
+    y = ""
+    z = ""
+    wrrd = document.getElementById("wordin").value.lower()
+    wrrds = wrrd.split()
+    global vowels, consonants
+    vowels = ["a", "e", "i", "o"]
+    consonants = ["t", "k", "ʔ", "f", "s", "w", "l", "j", "m", "n", "ɾ", "r", "h"]
+    
+    for j in wrrds:
+        if any(i in j for i in vowels + ["á","é","í","ó","ā","ē","ī","ō"])==False:
+            document.getElementById("changelog").innerHTML = "Every word has to have one of ORIGIN's vowels (a, i, e, o).<br>Please try again.".replace("\\","")
+            print("Every word has to have one of ORIGIN's vowels (a, i, e, o).")
+            print("Please try again.")
+            return None
+        for i in j:
+            if i not in vowels + consonants + ["y","́","̄","á","é","í","ó","ā","ē","ī","ō","'"]:
+                document.getElementById("changelog").innerHTML = "You cannot use non-ORIGIN phonemes.<br>Please try again.".replace("\\","")
+                print("You cannot use non-ORIGIN phonemes.")
+                print("Please try again.")
+                return None
+                
+    if len(wrrds) > 1:
+        for i in range(len(wrrds)):
+            mwi = main(wrrds[i])
+            chng = f"{wrrds[i]}:<br>{mwi[0]}" if chng == "" else f"{chng}<br>{wrrds[i]}:<br>{mwi[0]}"
+            nv = mwi[6]
+            vc = 0
+            for i in range(len(mwi[3])):
+                if mwi[3][i] in nv:
+                    vc += 1
+            if vc == 1:
+                mwi[3].replace('ˈ','')
+            p = mwi[1] if p == "" else f"{p} {mwi[1]}"
+            d = mwi[2]
+            x = mwi[3] if x == "" else f"{x} {mwi[3]}"
+            y = mwi[4] if y == "" else f"{y} {mwi[4]}"
+            z = mwi[5] if z == "" else f"{z} {mwi[5]}"
+    else:
+        mwi = main(wrrd)
+        chng = mwi[0]
+        p = mwi[1]
+        d = mwi[2]
+        x = mwi[3]
+        y = mwi[4]
+        z = mwi[5]
+    document.getElementById("changelog").innerHTML = "" #clear changelog
+    document.getElementById("changelog").innerHTML = chng
+    if len(wrrds) > 1:
+        finalstring = f"{wrrd} /{p}/ <br>↓{d}↓<br> {y} {'/'+x+'/' if d=='avian' else '['+x+']'} ({z})"
+    else:
+        finalstring = f"{wrrd} /{p}/ →{d}→ {y} {'/'+x+'/' if d=='avian' else '['+x+']'} ({z})"
+    document.getElementById("wordlist").innerHTML += "<br>"+finalstring 
 
 """
 def start():
