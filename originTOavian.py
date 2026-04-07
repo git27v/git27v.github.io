@@ -173,8 +173,8 @@ def main(wword):
     # haplology
     # VCVC
     Y = X
-    Y = loopsub(rf"({vowels})({orify(consonants)})\1\2$", r"\1\2ː\1", Y)  # / _# still need to fix interaction w stress
-    Y = loopsub(rf"({vowels})(ˈ)?({orify(consonants)})\1(ˈ)\3", r"\2\1\4\3ː", Y)  # / !_#
+    Y = loopsub(rf"({vowels})(ˈ)?({orify(consonants)})\1(ˈ)?\3$", r"\2\1\4\3ː\1", Y)  # / _# still need to fix interaction w stress
+    Y = loopsub(rf"({vowels})(ˈ)?({orify(consonants)})\1(ˈ)?\3", r"\2\1\4\3ː", Y)  # / !_#
     # CVCV
     Y = loopsub(rf"^(ˈ)?({orify(consonants)})({vowels})(ˈ)?\2\3", r"\1\3\4\2ː\3", Y)  # / #_
     Y = loopsub(rf"({orify(consonants)})({vowels})(ˈ)\1\2", r"\3\1ː\2", Y)  # / #_
