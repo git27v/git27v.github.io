@@ -385,17 +385,12 @@ def main(wword):
             if "ˈ" not in Y[i]:
                 Y[i] = loopsub(rf"ə$", "", Y[i])
         if "ˈ" not in Y[i] and "ˌ" not in Y[i]:
-            Y[i] = loopsub(rf"({consonants})({consonants})ə(ˈ)?([^{lststr(vowels) + 'wjɥ'}])", r"\1Q\2\3\4", Y[i])
             Y[i] = loopsub(rf"ə", "", Y[i])
         else:
             Y[i] = loopsub(rf"(m|w|f|v|ɥ|ᶣ|ʷ)ə|ə(m|w|f|v|ɥ)", r"\1ø\2", Y[i])
             Y[i] = loopsub(rf"ə", r"e", Y[i])
-        if "Q" in Y[i]:
-            Y[i]: loopsub(rf"Q", r"ə", Y[i])
-            Y[i] = loopsub(rf"(m|w|f|v|ɥ|ᶣ|ʷ)ə|ə(m|w|f|v|ɥ)", r"\1ø\2", Y[i])
-            Y[i] = loopsub(rf"ə", r"e", Y[i])
     Y = ''.join(map(re.escape, Y)).replace("ˌ", "")
-    Y = loopsub(rf"({consonants})({consonants})(ˈ)?({consonants})",rf"\1ə\2\3\4",Y)
+    Y = loopsub(rf"({consonants})({consonants})(ˈ)?(^{consonants+['w','j','ɥ']})",rf"\1ə\2\3\4",Y)
     Y = loopsub(rf"(m|w|f|v|ɥ|ᶣ|ʷ)ə|ə(m|w|f|v|ɥ)", r"\1ø\2", Y)
     Y = loopsub(rf"ə", r"e", Y)
     if Y != X:
