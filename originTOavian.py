@@ -385,7 +385,7 @@ def main(wword):
             if "ˈ" not in Y[i]:
                 Y[i] = loopsub(rf"ə$", "", Y[i])
         if "ˈ" not in Y[i] and "ˌ" not in Y[i]:
-            Y[i] = loopsub(rf"({consonants})({consonants})ə(ˈ)?({consonants})", r"\1Q\2\3", Y[i])
+            Y[i] = loopsub(rf"({consonants})({consonants})ə(ˈ)?([^{vowels + "w" + "j" + "ɥ"}])", r"\1Q\2\3", Y[i])
             Y[i] = loopsub(rf"ə", "", Y[i])
         else:
             Y[i] = loopsub(rf"(m|w|f|v|ɥ|ᶣ|ʷ)ə|ə(m|w|f|v|ɥ)", r"\1ø\2", Y[i])
